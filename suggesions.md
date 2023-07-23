@@ -1,5 +1,106 @@
 
 # Syntax suggestions (DRAFT)
+
+list.v (with suggestions applied. No comments. How it might look like)
+```v
+module collections
+
+
+let EMPTY_LIST_SIZE = 0
+
+
+[pub]
+struct List {
+    var size  int
+    var start &Node = unsafe { nil }
+    var end   &Node = unsafe { nil }
+}
+
+struct Node {
+    let item int
+    var next &Node = unsafe { nil }
+    var prev &Node = unsafe { nil }
+}
+
+
+List {
+
+    [pub]
+    fn size(list &List) int {
+        return list.size
+    }
+
+    [pub]
+    fn add(var &list, value int) {
+        list.size += 1
+
+        var node = &Node {
+            item: value
+        }
+
+        if isnil(list.start) {
+            list.start = node
+            list.end = node
+
+            return
+        }
+
+        var end = list.end
+
+        end.next = node
+        node.prev = list.end
+        list.end = node
+    }
+
+    [pub]
+    fn remove(var &list, index int) {
+        if list.size == EMPTY_LIST_SIZE || list.size <= index {
+            return
+        }
+
+        var current &Node = list.start
+        var current_index = 0
+
+        for !isnil(current) {
+            if current_index == index {
+                let prev = current.prev
+                let next = current.next
+
+                if !isnil(prev) {
+                    prev.next = next
+                }
+                if !isnil(next) {
+                    next.prev = prev
+                }
+                current.prev = unsafe { nil }
+                current.next = unsafe { nil }
+
+                list.size -= 1
+
+                return
+            }
+
+            current_index += 1
+            current = current.next
+        }
+    }
+
+    [pub]
+    fn for_each(&list, do fn (int)) {
+        if list.size == EMPTY_LIST_SIZE {
+            return
+        }
+
+        var current = list.start
+
+        for !isnil(current) {
+            do(current.item)
+            current = current.next
+        }
+    }
+}
+```
+
 list.v (original)
 ```v
 module collections
@@ -311,102 +412,4 @@ pub fn for_each(let list &List, do fn (int)) {
 
 ```
 
-list.v (with suggestions applied. No comments. How it might look like)
-```v
-module collections
 
-
-let EMPTY_LIST_SIZE = 0
-
-
-[pub]
-struct List {
-    var size  int
-    var start &Node = unsafe { nil }
-    var end   &Node = unsafe { nil }
-}
-
-struct Node {
-    let item int
-    var next &Node = unsafe { nil }
-    var prev &Node = unsafe { nil }
-}
-
-
-List {
-
-    [pub]
-    fn size(list &List) int {
-        return list.size
-    }
-
-    [pub]
-    fn add(var &list, value int) {
-        list.size += 1
-
-        var node = &Node {
-            item: value
-        }
-
-        if isnil(list.start) {
-            list.start = node
-            list.end = node
-
-            return
-        }
-
-        var end = list.end
-
-        end.next = node
-        node.prev = list.end
-        list.end = node
-    }
-
-    [pub]
-    fn remove(var &list, index int) {
-        if list.size == EMPTY_LIST_SIZE || list.size <= index {
-            return
-        }
-
-        var current &Node = list.start
-        var current_index = 0
-
-        for !isnil(current) {
-            if current_index == index {
-                let prev = current.prev
-                let next = current.next
-
-                if !isnil(prev) {
-                    prev.next = next
-                }
-                if !isnil(next) {
-                    next.prev = prev
-                }
-                current.prev = unsafe { nil }
-                current.next = unsafe { nil }
-
-                list.size -= 1
-
-                return
-            }
-
-            current_index += 1
-            current = current.next
-        }
-    }
-
-    [pub]
-    fn for_each(&list, do fn (int)) {
-        if list.size == EMPTY_LIST_SIZE {
-            return
-        }
-
-        var current = list.start
-
-        for !isnil(current) {
-            do(current.item)
-            current = current.next
-        }
-    }
-}
-```
